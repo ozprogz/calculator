@@ -23,7 +23,8 @@ body{
     grid-template-areas: 
     "display display display display"
     "display display display display"
-    "display display display display";
+    "display display display display"
+    "clear clear backspace division";
 }
 button{
     font-weight: bold;
@@ -83,4 +84,13 @@ button{
     float: right;
     border-style: solid;
     border-color: black;
+}
+.clear{
+    grid-area: clear;
+}
+.backspace{
+    grid-area: backspace;
+}
+#division{
+    grid-area: division;
 }

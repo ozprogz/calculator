@@ -19,16 +19,8 @@ digits.forEach( button => button.addEventListener("click", ()=> {
     if(!maxDisplayLength())
     {
     dividedByZero();
-    console.log(currentNumber);
     if(currentNumber==="0") currentNumber = currentNumber.slice(0,0);
-    console.log(currentNumber);
     currentNumber += button.textContent;
-    console.log(currentNumber);
-
-    /*if(operator!=="") {
-        previousNumber = currentNumber;
-        currentNumber="";   
-    }*/
     fillDisplay(button);   
 }
     
@@ -42,7 +34,7 @@ decimalButton.addEventListener("click", ()=>{
     }
 })
 operators.forEach( button => button.addEventListener("click", ()=> {
-    if(displayContent==="-") return false;
+    if(displayContent==="-" || displayContent[displayContent.length-1]==="-") return false;
     countNumbers++;
     if(isOperator(button.textContent) && isOperator(displayContent[displayContent.length-1])){
         countNumbers--;
@@ -51,19 +43,14 @@ operators.forEach( button => button.addEventListener("click", ()=> {
     if(countNumbers===2) equal();
     dividedByZero();
     if(!isOperator(displayContent[0])){
-        console.log(currentNumber);
-        console.log(previousNumber);
     previousNumber = parseFloat(currentNumber);
-    console.log(currentNumber);
-    console.log(previousNumber);
     operator = button.textContent; 
-    console.log(operator);
     fillDisplay(button);    
-    //operator="";
 }}));
 
 
 equalButton.addEventListener("click", () => {
+    if(displayContent[displayContent.length-1]==="-") return false;
     if(!isOperator(displayContent[displayContent.length-1])&& countNumbers===1)
     {countNumbers++;
     equal();
@@ -119,15 +106,14 @@ function clearDisplay(){
     countNumbers=0;
 }
 function fillDisplay(button){
-    //console.log(button.textContent);
-    //console.log(displayContent[displayContent.length-1]);
+ 
     
     if(isOperator(button.textContent) && isOperator(displayContent[displayContent.length-1])){
-        console.log(displayContent);
+        
         displayContent = displayContent.slice(0,-1);
         displayContent +=button.textContent;
         display.textContent = displayContent;
-        console.log(displayContent);
+        
     }
 
     else {
@@ -150,14 +136,10 @@ function dividedByZero(){
     }
 }
 function equal(){
-    console.log(previousNumber);
-    console.log(currentNumber); 
     secondNumber = parseFloat(currentNumber);
-    console.log(secondNumber)
     let result = operate(previousNumber, secondNumber,operator);
     if(typeof result ==="number") result = Math.round((result + Number.EPSILON) * 100) / 100;
     displayContent = `${result}`;
-    console.log(displayContent);
     display.textContent= displayContent;
     currentNumber = `${result}`;
     secondNumber="";   
@@ -190,7 +172,7 @@ function updateDisplay(){
     display.textContent = displayContent;
 }
 function toggleSign(){
-    if(countNumbers===0){
+    if(countNumbers===0 && !isOperator(displayContent[displayContent.length-1])){
         if(parseFloat(currentNumber)>0)
         {currentNumber="-"+ currentNumber;
         displayContent = currentNumber;
@@ -202,21 +184,18 @@ function toggleSign(){
             displayContent = currentNumber;
             display.textContent = displayContent;
         } }
-        if(countNumbers===1){
+        if(countNumbers===1 && !isOperator(displayContent[displayContent.length-1])){
             if(parseFloat(currentNumber)>0)
             {currentNumber="-"+ currentNumber;
             displayContent = displayContent.slice(0,-(currentNumber.length-1));
             displayContent += currentNumber;
             display.textContent = displayContent;
             }
-            else if(currentNumber==="0") return false;
+            else if(currentNumber==="0" || parseFloat(currentNumber)===0) return false;
             else{
                 currentNumber= currentNumber.slice(1);
-                displayContent = displayContent.slice(0,-(currentNumber.length-1));
+                displayContent = displayContent.slice(0,-(currentNumber.length+1));
                 displayContent += currentNumber;
                 display.textContent = displayContent;
             } }
 }
-    //else if(currentNumber==="0") return false;
-    //else currentNumber= currentNumber.slice(1);
-    
