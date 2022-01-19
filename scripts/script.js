@@ -13,60 +13,19 @@ let currentNumber="0";
 let previousNumber;
 let secondNumber;
 let countNumbers=0;
+let error="KEKW"
 
-digits.forEach( button => button.addEventListener("click", ()=> {
-    if(isOperator(displayContent[displayContent.length-1])) currentNumber="";
-    if(!maxDisplayLength())
-    {
-    dividedByZero();
-    if(currentNumber==="0") currentNumber = currentNumber.slice(0,0);
-    currentNumber += button.textContent;
-    fillDisplay(button);   
-}
-    
-}));
-decimalButton.addEventListener("click", ()=>{
-    if(!currentNumber.includes(".")){
-    dividedByZero();
-    if(isOperator(displayContent[displayContent.length-1])) currentNumber="";
-    currentNumber += decimalButton.textContent;
-    fillDisplay(decimalButton);
-    }
-})
-operators.forEach( button => button.addEventListener("click", ()=> {
-    if(displayContent==="-" || displayContent[displayContent.length-1]==="-") return false;
-    countNumbers++;
-    if(isOperator(button.textContent) && isOperator(displayContent[displayContent.length-1])){
-        countNumbers--;
-    }
-    
-    if(countNumbers===2) equal();
-    dividedByZero();
-    if(!isOperator(displayContent[0])){
-    previousNumber = parseFloat(currentNumber);
-    operator = button.textContent; 
-    fillDisplay(button);    
-}}));
-
-
-equalButton.addEventListener("click", () => {
-    if(displayContent[displayContent.length-1]==="-") return false;
-    if(!isOperator(displayContent[displayContent.length-1])&& countNumbers===1)
-    {countNumbers++;
-    equal();
-    countNumbers=0;
-}
-}) 
-
+digits.forEach( button => button.addEventListener("click", ()=> putDigit(button)));
+decimalButton.addEventListener("click", (button)=> putDecimal(button));
+operators.forEach( button => button.addEventListener("click", ()=> putOperator(button)));
+equalButton.addEventListener("click", () => equalize()); 
 clearButton.addEventListener("click", ()=> clearDisplay());
-
 backSpaceButton.addEventListener("click", ()=>{
     backSpace();
     updateDisplay();}
 );
-signButton.addEventListener("click", ()=> {
-    toggleSign();
-});
+signButton.addEventListener("click", ()=> toggleSign());
+
 function add(x,y){
     return x+y;
 }
@@ -106,37 +65,34 @@ function clearDisplay(){
     countNumbers=0;
 }
 function fillDisplay(button){
- 
-    
     if(isOperator(button.textContent) && isOperator(displayContent[displayContent.length-1])){
-        
         displayContent = displayContent.slice(0,-1);
         displayContent +=button.textContent;
         display.textContent = displayContent;
-        
     }
-
     else {
     if(displayContent==="0" && !isOperator(button.textContent)){
         countNumbers=0;
         displayContent= displayContent.slice(0,0);
-        
     }
     displayContent += button.textContent;
     display.textContent = displayContent;}
+    console.log(displayContent);
 }
 
 function isOperator(char){
-    if(char ==="+" || char==="−" || char==="×" || char==="÷") return true;
+    if(char ==="+" || char==="−" || char==="×" || char==="÷"|| char==="/") return true;
     else return false;
 }
 function dividedByZero(){
-    if(displayContent==="KEKW"){
+    if(displayContent===error){
     clearDisplay();
     }
 }
 function equal(){
     secondNumber = parseFloat(currentNumber);
+    console.log(secondNumber);
+    console.log(previousNumber);
     let result = operate(previousNumber, secondNumber,operator);
     if(typeof result ==="number") result = Math.round((result + Number.EPSILON) * 100) / 100;
     displayContent = `${result}`;
@@ -151,6 +107,11 @@ function maxDisplayLength(){
 }
 
 function backSpace(){
+    if(displayContent===error){
+        displayContent="";
+        currentNumber="0";
+        return false;
+    }
     if(isOperator(displayContent[displayContent.length-1]) && currentNumber===''){
         countNumbers--;
         displayContent = displayContent.slice(0,-1);
@@ -168,10 +129,12 @@ function updateDisplay(){
     if(displayContent===""){
         displayContent="0";
         currentNumber="0";
+        countNumbers=0;
     }
     display.textContent = displayContent;
 }
 function toggleSign(){
+    if(currentNumber==="-") return false;
     if(countNumbers===0 && !isOperator(displayContent[displayContent.length-1])){
         if(parseFloat(currentNumber)>0)
         {currentNumber="-"+ currentNumber;
@@ -199,3 +162,80 @@ function toggleSign(){
                 display.textContent = displayContent;
             } }
 }
+function lastIsOperator(){
+    if(isOperator(displayContent[displayContent.length-1])) currentNumber="";
+}
+function putDigit(button){
+    lastIsOperator();
+    if(!maxDisplayLength())
+    {
+    dividedByZero();
+    if(currentNumber==="0") currentNumber = currentNumber.slice(0,0);
+    currentNumber += button.textContent;
+    fillDisplay(button);   
+    }
+}
+function putDecimal(button){
+    if(!currentNumber.includes(".")){
+        dividedByZero();
+        lastIsOperator();
+        currentNumber += decimalButton.textContent;
+        fillDisplay(decimalButton);
+        }
+}
+function equalize(){
+    if(displayContent[displayContent.length-1]==="-") return false;
+    if(!isOperator(displayContent[displayContent.length-1])&& countNumbers===1)
+    {   countNumbers++;
+        equal();
+        countNumbers=0;
+    }   
+}
+function putOperator(button){
+    if(displayContent==="-" || displayContent[displayContent.length-1]==="-" || displayContent===error) return false;
+    countNumbers++;
+    if(isOperator(button.textContent) && isOperator(displayContent[displayContent.length-1])){
+        countNumbers--;
+    }
+    if(countNumbers===2) equal();
+    dividedByZero();
+    if(!isOperator(displayContent[0])){
+    previousNumber = parseFloat(currentNumber);
+    operator = button.textContent; 
+    fillDisplay(button);    
+    }
+}
+//keyboard support  
+
+function handler(event){
+    let button = document.querySelector(`button[data-key="${event.keyCode}"]`);
+    if(event.key==="*") button = document.querySelector(`button[data-key="500"]`);
+    if(event.key==="/") button = document.querySelector(`button[data-key="501"]`);
+    if(event.key==="+") button = document.querySelector(`button[data-key="171"]`);
+    if(event.key==="-") button = document.querySelector(`button[data-key="173"]`);
+    if(event.keyCode>=48 && event.keyCode <=57 && event.shiftKey === false){
+        putDigit(button);
+    }
+    else if(event.keyCode==190){
+        putDecimal(button);
+    }
+    else if(event.key=="+"|| event.key=="-"|| event.key=="/" || event.key=="*"){
+        putOperator(button);
+    }
+    else if(event.keyCode==8){
+        backSpace();
+        updateDisplay();
+    }
+    else if(event.keyCode==27){
+        clearDisplay();
+    }
+    else if(event.keyCode==13){
+        equalize();
+    }
+    else if(event.keyCode==18){
+        toggleSign();
+    }
+    
+}
+
+window.addEventListener("keydown", handler, false);
